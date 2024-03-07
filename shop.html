@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="shopstyle.css">
+</head>
+<body>
+    <!-- header section -->
+    <section class="header">
+        <div class="RHS">
+            <!-- <a href="#"><img src="https://raw.githubusercontent.com/tech2etc/Build-and-Deploy-Ecommerce-Website/main/img/products/f2.jpg" class="logo" alt=""></a> -->
+        </div>
+        <div class="RHS">
+            <ul class="navbar">
+                <li><a href="index.html">Home</a></li>
+                <li><a class="active" href="shop.html">Shop</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="cart.html"><i class="fas fa-shopping-cart"></i></a></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="product1" class="section-p1">
+        <h2 class="fea-pro">Today's Collection</h2>
+        <p>Grab your fit in style now</p>
+
+        <div class="pro-container">
+            <!-- Rendered items from the backend will be inserted here -->
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function generateStarRating(rating) {
+                const fullStar = '<i class="fas fa-star"></i>';
+                const emptyStar = '<i class="far fa-star"></i>';
+                const starRating = Array.from({ length: 5 }, (_, index) => {
+                    return index < rating ? fullStar : emptyStar;
+                }).join('');
+                return starRating;
+            }
+    
+            fetch('http://localhost:3000/api/tshirts') // Update the URL with your backend API endpoint
+                .then(response => response.json())
+                .then(data => {
+                    const proContainer = document.querySelector('.pro-container');
+    
+                    const brands = {};
+    
+                    // Filter data for the 4 different brands
+                    const filteredData = data.filter(item => ['Adidas', 'Levi', 'Van Huesen', 'Nike'].includes(item.brand));
+    
+                    // Organize data by brand and color
+                    filteredData.forEach(item => {
+                        if (!brands[item.brand]) {
+                            brands[item.brand] = {};
+                        }
+                        if (!brands[item.brand][item.color]) {
+                            brands[item.brand][item.color] = [];
+                        }
+                        brands[item.brand][item.color].push(item);
+                    });
+    
+                    // Display containers for each brand with different colors
+                    for (const brand in brands) {
+                        const brandElement = document.createElement('div');
+                        brandElement.classList.add('brand');
+                        brandElement.innerHTML = `<h2>${brand}</h2>`;
+    
+                        // Display only one black, white, blue, and red t-shirt for each brand
+                        const colorsToDisplay = ['Black', 'White', 'Blue', 'Red'];
+                        colorsToDisplay.forEach(color => {
+                            if (brands[brand][color] && brands[brand][color].length > 0) {
+                                const items = brands[brand][color].slice(0, 1); // Display only one item for each color
+                                const colorElement = document.createElement('div');
+                                colorElement.classList.add('color');
+                                colorElement.innerHTML = `<h3>${color}</h3>`;
+    
+                                items.forEach(item => {
+                                    const itemElement = document.createElement('div');
+                                    itemElement.classList.add('pro');
+                                    itemElement.innerHTML = `
+                                        <div class="product-item">
+                                            <div class="image-section">
+                                                <!-- Include image here -->
+                                                <img src="${item.image}" alt="">
+                                            </div>
+                                            <div class="product-info">
+                                                <span>${item.brand}</span>
+                                                <h5>${item.name}</h5>
+                                                <div class="star">
+                                                    ${generateStarRating(item.rating)}
+                                                </div>
+                                                <h4>$${item.price}</h4>
+                                                <div class="scroll-container">
+                                                    <p>Sizes:</p>
+                                                    <div class="scroll-content">
+                                                        ${item.size}
+                                                    </div>
+                                                </div>
+                                                <a href="#" class="btn">Add to Cart</a>
+                                            </div>
+                                        </div>
+                                    `;
+                                    colorElement.appendChild(itemElement);
+                                });
+    
+                                brandElement.appendChild(colorElement);
+                            }
+                        });
+    
+                        proContainer.appendChild(brandElement);
+                    }
+                })
+                .catch(error => console.error('Error fetching items:', error));
+        });
+    </script>
+</body>
+</html>
